@@ -10,8 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Sky471012/go-project/internal/http/handlers/student"
 	"github.com/Sky471012/go-project/internal/config"
+	"github.com/Sky471012/go-project/internal/http/handlers/student"
+	"github.com/Sky471012/go-project/internal/storage/sqlite"
 )
 
 func main() {
@@ -19,11 +20,17 @@ func main() {
 	cfg := config.MustLoad()
 
 	// database setup
+	storage, err := sqlite.New(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	slog.Info("storage initialized", slog.String("env", cfg.Env), slog.String("version", "1.0.0"))
 
 	//setup router
 	router := http.NewServeMux()
 
-	router.HandleFunc("POST /api/students", student.New())
+	router.HandleFunc("POST /api/students", student.New(storage))
 	
 	//setup server
 
